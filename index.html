@@ -435,6 +435,21 @@
       text-transform: uppercase;
     }
 
+    /* ---- PLACEHOLDER ---- */
+    .image {
+      text-align: center;
+      margin: 2rem 0;
+      border-radius: 3px;
+    }
+
+    .image-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
     /* ---- QUOTE ---- */
     blockquote {
       border-left: 3px solid var(--accent-dim);
@@ -639,8 +654,8 @@
       P(common = S | n_S) ∝ P(n_S | common = S) · P(common = S)
     </div>
 
-    <div class="placeholder">
-      <div class="placeholder-label">📊 Figure 1 — P(Spades = Common | n Spades)</div>
+    <div class="image">
+      <img src="./img/SpadesBeingCommonGivenNSpades.png" />
     </div>
 
     <h3>Multi-Suit Posterior</h3>
@@ -650,12 +665,14 @@
       posterior across <em>all four</em> suit hypotheses simultaneously.
     </p>
 
-    <div class="placeholder">
-      <div class="placeholder-label">📊 Figure 2 — Two-Suit Posterior Probabilities</div>
+    <div class="image">
+      <img src="./img/2SuitsProbability.png" />
+      <div class="image-label">📊 Figure 2 — Two-Suit Posterior Probabilities</div>
     </div>
 
-    <div class="placeholder">
-      <div class="placeholder-label">📊 Figure 3 — Posterior Heatmap (Suit A cards × Suit B cards)</div>
+    <div class="image">
+      <img src="./img/2SuitsProbabilityHeatmap.png" />
+      <div class="image-label">📊 Figure 3 — Posterior Heatmap (Suit A cards × Suit B cards)</div>
     </div>
 
     <blockquote>
