@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Understanding Figgie</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0e0f0c;
+      --surface: #161714;
+      --border: #2a2c27;
+      --accent: #c8f03a;
+      --accent-dim: #8aaa1a;
+      --text: #e8e8e4;
+      --text-muted: #7a7d72;
+      --text-dim: #4a4d42;
+      --red: #e8503a;
+      --gold: #f0b840;
+      --spade: #e8e8e4;
+      --heart: #e8503a;
+      --diamond: #f0b840;
+      --club: #c8f03a;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      line-height: 1.7;
+      font-size: 17px;
+    }
+
+    /* ---- SIDEBAR NAV ---- */
+    nav {
+      position: fixed;
+      top: 0; left: 0;
+      width: 240px;
+      height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 2rem 1.5rem;
+      z-index: 100;
+      overflow-y: auto;
+    }
+
+    .nav-logo {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--accent);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+
+    .nav-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.2rem;
+      color: var(--text);
+      line-height: 1.3;
+      margin-bottom: 2rem;
+    }
+
+    .nav-section-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+      margin-top: 1.5rem;
+    }
+
+    nav a {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 0.25rem 0;
+      transition: color 0.2s;
+      line-height: 1.5;
+    }
+
+    nav a:hover { color: var(--accent); }
+    nav a.active { color: var(--accent); }
+
+    .suit-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: auto;
+      padding-top: 2rem;
+      font-size: 1.1rem;
+    }
+
+    .suit { opacity: 0.6; transition: opacity 0.2s; cursor: default; }
+    .suit:hover { opacity: 1; }
+    .suit.sp { color: var(--spade); }
+    .suit.ht { color: var(--heart); }
+    .suit.dm { color: var(--diamond); }
+    .suit.cl { color: var(--club); }
+
+    /* ---- MAIN CONTENT ---- */
+    main {
+      margin-left: 240px;
+      min-height: 100vh;
+    }
+
+    /* ---- HERO ---- */
+    .hero {
+      border-bottom: 1px solid var(--border);
+      padding: 5rem 5rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(200,240,58,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--accent);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .hero h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2.5rem, 5vw, 4.5rem);
+      line-height: 1.1;
+      color: var(--text);
+      margin-bottom: 1.5rem;
+    }
+
+    .hero h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .hero-desc {
+      max-width: 600px;
+      color: var(--text-muted);
+      font-size: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-links {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.2rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.05em;
+      text-decoration: none;
+      border-radius: 3px;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #0e0f0c;
+      font-weight: 600;
+    }
+
+    .btn-primary:hover { background: #d4f54a; }
+
+    .btn-outline {
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ---- STATUS BAR ---- */
+    .status-bar {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+
+    .status-item {
+      padding: 1rem 2rem;
+      border-right: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .status-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+
+    .status-value {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--accent);
+    }
+
+    .status-value.warn { color: var(--gold); }
+    .status-value.dim { color: var(--text-muted); }
+
+    /* ---- CONTENT SECTIONS ---- */
+    .section {
+      padding: 4rem 5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .section-number {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+    }
+
+    .section h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.8rem;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .section h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.2rem;
+      color: var(--text);
+      margin-top: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .section p {
+      color: var(--text-muted);
+      max-width: 720px;
+      margin-bottom: 1.2rem;
+    }
+
+    /* math/latex style display */
+    .math {
+      font-family: 'IBM Plex Mono', monospace;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      font-size: 0.85rem;
+      color: var(--text);
+      overflow-x: auto;
+      border-radius: 0 3px 3px 0;
+    }
+
+    /* ---- INSIGHT CARDS ---- */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin: 2rem 0;
+    }
+
+    .card {
+      background: var(--surface);
+      padding: 1.5rem;
+    }
+
+    .card-suit {
+      font-size: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .card-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .card p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    /* ---- ROADMAP TABLE ---- */
+    .roadmap {
+      border: 1px solid var(--border);
+      margin: 2rem 0;
+      overflow: hidden;
+    }
+
+    .roadmap-row {
+      display: flex;
+      align-items: center;
+      padding: 0.85rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      gap: 1rem;
+      transition: background 0.15s;
+    }
+
+    .roadmap-row:last-child { border-bottom: none; }
+    .roadmap-row:hover { background: var(--surface); }
+
+    .roadmap-status {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .roadmap-status.done { background: var(--accent); }
+    .roadmap-status.pending { background: var(--border); border: 1px solid var(--text-dim); }
+    .roadmap-status.wip { background: var(--gold); }
+
+    .roadmap-text {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      flex: 1;
+    }
+
+    .roadmap-text.done-text { color: var(--text-dim); text-decoration: line-through; }
+
+    .roadmap-tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.6rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 2px;
+      letter-spacing: 0.05em;
+    }
+
+    .tag-math { background: rgba(200,240,58,0.1); color: var(--accent); }
+    .tag-eng { background: rgba(240,184,64,0.1); color: var(--gold); }
+    .tag-ml { background: rgba(232,80,58,0.1); color: var(--red); }
+
+    /* ---- REFERENCES ---- */
+    .ref-list { margin: 1.5rem 0; }
+
+    .ref-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 0.85rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ref-item:last-child { border-bottom: none; }
+
+    .ref-num {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      padding-top: 0.15rem;
+      flex-shrink: 0;
+      width: 2rem;
+    }
+
+    .ref-body { flex: 1; }
+
+    .ref-title {
+      font-size: 0.9rem;
+      color: var(--text);
+      text-decoration: none;
+      display: block;
+      margin-bottom: 0.2rem;
+      transition: color 0.2s;
+    }
+
+    .ref-title:hover { color: var(--accent); }
+
+    .ref-meta {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+    }
+
+    .ref-badge {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.55rem;
+      padding: 0.15rem 0.4rem;
+      border-radius: 2px;
+      margin-top: 0.5rem;
+      display: inline-block;
+    }
+
+    .badge-read { background: rgba(200,240,58,0.1); color: var(--accent); }
+    .badge-unread { background: var(--surface); color: var(--text-dim); border: 1px solid var(--border); }
+
+    /* ---- PLACEHOLDER ---- */
+    .placeholder {
+      border: 1px dashed var(--border);
+      padding: 3rem 2rem;
+      text-align: center;
+      margin: 2rem 0;
+      border-radius: 3px;
+    }
+
+    .placeholder-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    /* ---- QUOTE ---- */
+    blockquote {
+      border-left: 3px solid var(--accent-dim);
+      padding: 1rem 1.5rem;
+      margin: 2rem 0;
+      background: var(--surface);
+    }
+
+    blockquote p {
+      font-family: 'DM Serif Display', serif;
+      font-style: italic;
+      font-size: 1.05rem;
+      color: var(--text);
+      margin: 0;
+    }
+
+    blockquote cite {
+      display: block;
+      margin-top: 0.5rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-style: normal;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+    }
+
+    /* ---- SCROLLBAR ---- */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); }
+
+    /* ---- RESPONSIVE ---- */
+    @media (max-width: 900px) {
+      nav { display: none; }
+      main { margin-left: 0; }
+      .hero, .section { padding: 2.5rem 2rem; }
+    }
+
+    /* ---- ANIMATIONS ---- */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-tag, .hero h1, .hero-desc, .hero-links {
+      animation: fadeUp 0.6s ease both;
+    }
+    .hero h1 { animation-delay: 0.05s; }
+    .hero-desc { animation-delay: 0.1s; }
+    .hero-links { animation-delay: 0.15s; }
+
+    /* progress pip row */
+    .pip-row {
+      display: flex;
+      gap: 4px;
+      margin-top: 0.4rem;
+    }
+
+    .pip {
+      width: 20px;
+      height: 3px;
+      border-radius: 2px;
+      background: var(--border);
+    }
+
+    .pip.done { background: var(--accent); }
+    .pip.wip { background: var(--gold); }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR NAV -->
+<nav>
+  <div class="nav-logo">Quant Training</div>
+  <div class="nav-title">Understanding Figgie</div>
+
+  <div class="nav-section-label">Contents</div>
+  <a href="#overview">Overview</a>
+  <a href="#statistical-analysis">Statistical Analysis</a>
+  <a href="#bayesian">— Bayesian Inference</a>
+  <a href="#starting-hand">— Starting Hand</a>
+  <a href="#ev">Expected Value</a>
+  <a href="#information-flow">Information Flow</a>
+
+  <div class="nav-section-label">Project</div>
+  <a href="#roadmap">Roadmap</a>
+  <a href="#references">References</a>
+
+  <div class="suit-row">
+    <span class="suit sp">♠</span>
+    <span class="suit ht">♥</span>
+    <span class="suit dm">♦</span>
+    <span class="suit cl">♣</span>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main>
+
+  <!-- HERO -->
+  <section class="hero" id="overview">
+    <div class="hero-tag">Jane Street · Market Microstructure · Quant Training</div>
+    <h1>Understanding<br /><em>Figgie</em></h1>
+    <p class="hero-desc">
+      A mathematical deep-dive into optimizing strategy for Jane Street's card-trading game.
+      Covering Bayesian inference, expected value, information theory, and eventually — 
+      reinforcement learning.
+    </p>
+    <div class="hero-links">
+      <a class="btn btn-primary" href="https://www.figgie.com/how-to-play.html" target="_blank">↗ Rules</a>
+      <a class="btn btn-outline" href="https://www.loganseaburg.com/blog/figgie-1-background" target="_blank">↗ Background Reading</a>
+      <a class="btn btn-outline" href="https://arxiv.org/pdf/2110.00879" target="_blank">↗ Research Paper</a>
+    </div>
+  </section>
+
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <div class="status-item">
+      <div class="status-label">Status</div>
+      <div class="status-value">In Progress</div>
+    </div>
+    <div class="status-item">
+      <div class="status-label">Probabilities</div>
+      <div class="status-value">✓ Done</div>
+    </div>
+    <div class="status-item">
+      <div class="status-label">Expected Value</div>
+      <div class="status-value warn">In Progress</div>
+    </div>
+    <div class="status-item">
+      <div class="status-label">Simulation</div>
+      <div class="status-value dim">Pending</div>
+    </div>
+    <div class="status-item">
+      <div class="status-label">RL Model</div>
+      <div class="status-value dim">Pending</div>
+    </div>
+  </div>
+
+  <!-- STATISTICAL ANALYSIS -->
+  <section class="section" id="statistical-analysis">
+    <div class="section-header">
+      <span class="section-number">01</span>
+      <h2>Statistical Analysis</h2>
+    </div>
+    <p>
+      To understand how to get better at Figgie, we must first understand the odds.
+      The card distribution is the foundation — everything flows downstream from 
+      knowing how likely a given hand composition is, and what it implies about 
+      the hidden state of the deck.
+    </p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-suit" style="color: var(--spade)">♠</div>
+        <div class="card-title">Deck Structure</div>
+        <p>40 cards across 4 suits. One suit has 12 cards (common), another 10, and the remaining two 8 each. The common suit's cross-suit is the <em>target</em> — worth $10 per card at end of round.</p>
+      </div>
+      <div class="card">
+        <div class="card-suit" style="color: var(--heart)">♥</div>
+        <div class="card-title">Target Suit</div>
+        <p>The target suit is cross-suits with the common suit: ♠↔♣ and ♥↔♦. If ♠ has 12, ♣ is the target. The pot is $200 — split by who holds target cards at end of trading.</p>
+      </div>
+      <div class="card">
+        <div class="card-suit" style="color: var(--diamond)">♦</div>
+        <div class="card-title">Hidden Information</div>
+        <p>Neither the common suit nor the target is revealed. Players must infer them from hand composition, market behavior, and sequential Bayesian updating.</p>
+      </div>
+      <div class="card">
+        <div class="card-suit" style="color: var(--club)">♣</div>
+        <div class="card-title">Information Edge</div>
+        <p>Superior inference about the target suit — or about what <em>others</em> believe — is the core alpha. This is a game about epistemics as much as trading.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- BAYESIAN INFERENCE -->
+  <section class="section" id="bayesian">
+    <div class="section-header">
+      <span class="section-number">02</span>
+      <h2>Bayesian Inference</h2>
+    </div>
+
+    <h3 id="starting-hand">Starting Hand Analysis</h3>
+    <p>
+      The most important suit in the game is the target suit — the only one that gets 
+      scored at end of round. To find it, we need to identify the common suit, which 
+      always holds exactly 12 cards. Since the common suit has the most cards, there 
+      is an implicit prior that any given suit in our hand is more likely to be common 
+      the more of it we hold.
+    </p>
+
+    <p>
+      If we're dealt 6 hearts, 2 spades, 1 diamond, and 1 club — how confident 
+      should we be that hearts is the common suit? More precisely:
+    </p>
+
+    <div class="math">
+      P(suit S is common | dealt n cards of S) = ?
+      <br /><br />
+      Using Bayes' theorem with uniform prior over 4 suits:
+      <br />
+      P(common = S | n_S) ∝ P(n_S | common = S) · P(common = S)
+    </div>
+
+    <div class="placeholder">
+      <div class="placeholder-label">📊 Figure 1 — P(Spades = Common | n Spades)</div>
+    </div>
+
+    <h3>Multi-Suit Posterior</h3>
+    <p>
+      We shouldn't limit our inference to the most-held suit alone. Every card in 
+      the hand is a signal. Holding 7 spades and 2 hearts jointly updates our 
+      posterior across <em>all four</em> suit hypotheses simultaneously.
+    </p>
+
+    <div class="placeholder">
+      <div class="placeholder-label">📊 Figure 2 — Two-Suit Posterior Probabilities</div>
+    </div>
+
+    <div class="placeholder">
+      <div class="placeholder-label">📊 Figure 3 — Posterior Heatmap (Suit A cards × Suit B cards)</div>
+    </div>
+
+    <blockquote>
+      <p>Figgie is a game about information, not just cards. The hand is the prior; the market is the evidence.</p>
+      <cite>— Inspired by the Jane Street Figgie community</cite>
+    </blockquote>
+  </section>
+
+  <!-- EXPECTED VALUE -->
+  <section class="section" id="ev">
+    <div class="section-header">
+      <span class="section-number">03</span>
+      <h2>Expected Value &amp; Rational Pricing</h2>
+    </div>
+    <p>
+      Given a posterior distribution over which suit is the target, we can derive 
+      rational bid/ask prices for each card. A card of suit S should trade at 
+      roughly its expected end-of-round value — the $10 payout weighted by the 
+      probability that S is indeed the target.
+    </p>
+    <div class="placeholder">
+      <div class="placeholder-label">⚙️ Section in progress — Expected Value derivation coming soon</div>
+    </div>
+  </section>
+
+  <!-- INFORMATION FLOW -->
+  <section class="section" id="information-flow">
+    <div class="section-header">
+      <span class="section-number">04</span>
+      <h2>Efficiency &amp; Information Flow</h2>
+    </div>
+    <p>
+      Markets in Figgie are short (4 minutes), noisy, and played by humans under 
+      pressure. This section will examine how price discovery unfolds over the round, 
+      whether markets converge to true value, and how to quantify the value of 
+      private information.
+    </p>
+    <div class="placeholder">
+      <div class="placeholder-label">⚙️ Section in progress — Information theory analysis coming soon</div>
+    </div>
+  </section>
+
+  <!-- ROADMAP -->
+  <section class="section" id="roadmap">
+    <div class="section-header">
+      <span class="section-number">05</span>
+      <h2>Project Roadmap</h2>
+    </div>
+    <p>Active research and engineering tasks. Progress tracked as analysis is completed.</p>
+
+    <div class="roadmap" style="margin-top:2rem;">
+      <div style="padding:0.75rem 1.5rem; background: var(--surface); border-bottom: 1px solid var(--border);">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:0.65rem; color:var(--text-dim); letter-spacing:0.1em; text-transform:uppercase;">Math &amp; Analysis</span>
+      </div>
+      <div class="roadmap-row">
+        <div class="roadmap-status done"></div>
+        <div class="roadmap-text done-text">Probability of common suit given n cards of one suit</div>
+        <span class="roadmap-tag tag-math">MATH</span>
+      </div>
+      <div class="roadmap-row">
+        <div class="roadmap-status done"></div>
+        <div class="roadmap-text done-text">Probability of common suit given full starting hand</div>
+        <span class="roadmap-tag tag-math">MATH</span>
+      </div>
+      <div class="roadmap-row">
+        <div class="roadmap-status pending"></div>
+        <div class="roadmap-text">Sequential Bayesian updating from market information</div>
+        <span class="roadmap-tag tag-math">MATH</span>
+      </div>
+      <div class="roadmap-row">
+        <div class="roadmap-status pending"></div>
+        <div class="roadmap-text">Expected value per card given posterior</div>
+        <span class="roadmap-tag tag-math">MATH</span>
+      </div>
+      <div class="roadmap-row">
+        <div class="roadmap-status pending"></div>
+        <div class="roadmap-text">Marginal value of trades</div>
+        <span class="roadmap-tag tag-math">MATH</span>
+      </div>
+      <div class="roadmap-row">
+        <div class="roadmap-status pending"></div>
+        <div class="roadmap-text">Value of information / entropy reduction</div>
+        <span class="roadmap-tag tag-math">MATH</span>
+      </div>
+      <div class="roadmap-row">
+        <div class="roadmap-status pending"></div>
+        <div class="roadmap-text">Does price converge to true value?</div>
+        <span class="roadmap-tag tag-math">MATH</span>
+      </div>
+    </div>
+
+    <div class="roadmap" style="margin-top:1px;">
+      <div style="padding:0.75rem 1.5rem; background: var(--surface); border-bottom: 1px solid var(--border);">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:0.65rem; color:var(--text-dim); letter-spacing:0.1em; text-transform:uppercase;">Engineering</span>
+      </div>
+      <div class="roadmap-row">
+        <div class="roadmap-status pending"></div>
+        <div class="roadmap-text">Baseline strategy formalization</div>
+        <span class="roadmap-tag tag-eng">ENG</span>
+      </div>
+      <div class="roadmap-row">
+        <div class="roadmap-status wip"></div>
+        <div class="roadmap-text">Game simulation (rough)</div>
+        <span class="roadmap-tag tag-eng">ENG</span>
+      </div>
+      <div class="roadmap-row">
+        <div class="roadmap-status pending"></div>
+        <div class="roadmap-text">Dashboard with simulation results</div>
+        <span class="roadmap-tag tag-eng">ENG</span>
+      </div>
+      <div class="roadmap-row">
+        <div class="roadmap-status pending"></div>
+        <div class="roadmap-text">Auto-strategy bots</div>
+        <span class="roadmap-tag tag-eng">ENG</span>
+      </div>
+      <div class="roadmap-row">
+        <div class="roadmap-status pending"></div>
+        <div class="roadmap-text">Server-client backend (Docker)</div>
+        <span class="roadmap-tag tag-eng">ENG</span>
+      </div>
+      <div class="roadmap-row">
+        <div class="roadmap-status pending"></div>
+        <div class="roadmap-text">WebSocket server support</div>
+        <span class="roadmap-tag tag-eng">ENG</span>
+      </div>
+      <div class="roadmap-row">
+        <div class="roadmap-status pending"></div>
+        <div class="roadmap-text">GUI for live-game visualization</div>
+        <span class="roadmap-tag tag-eng">ENG</span>
+      </div>
+    </div>
+
+    <div class="roadmap" style="margin-top:1px;">
+      <div style="padding:0.75rem 1.5rem; background: var(--surface); border-bottom: 1px solid var(--border);">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:0.65rem; color:var(--text-dim); letter-spacing:0.1em; text-transform:uppercase;">Machine Learning</span>
+      </div>
+      <div class="roadmap-row">
+        <div class="roadmap-status pending"></div>
+        <div class="roadmap-text">Implement Traders in a Strange Land bots</div>
+        <span class="roadmap-tag tag-ml">ML</span>
+      </div>
+      <div class="roadmap-row">
+        <div class="roadmap-status pending"></div>
+        <div class="roadmap-text">Reinforcement learning model</div>
+        <span class="roadmap-tag tag-ml">ML</span>
+      </div>
+      <div class="roadmap-row">
+        <div class="roadmap-status pending"></div>
+        <div class="roadmap-text">Various ML-based strategy models</div>
+        <span class="roadmap-tag tag-ml">ML</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- REFERENCES -->
+  <section class="section" id="references">
+    <div class="section-header">
+      <span class="section-number">06</span>
+      <h2>References</h2>
+    </div>
+
+    <div class="ref-list">
+      <div class="ref-item">
+        <div class="ref-num">01</div>
+        <div class="ref-body">
+          <a class="ref-title" href="https://www.figgie.com/how-to-play.html" target="_blank">Figgie — Official Rules ↗</a>
+          <div class="ref-meta">figgie.com · Jane Street</div>
+          <span class="ref-badge badge-read">✓ Read</span>
+        </div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-num">02</div>
+        <div class="ref-body">
+          <a class="ref-title" href="https://www.loganseaburg.com/blog/figgie-1-background" target="_blank">Understanding Figgie — Background ↗</a>
+          <div class="ref-meta">loganseaburg.com · Logan Seaburg</div>
+          <span class="ref-badge badge-read">✓ Read</span>
+        </div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-num">03</div>
+        <div class="ref-body">
+          <a class="ref-title" href="https://web.archive.org/web/20221230205817/https://www.thediff.co/archive/jane-street/" target="_blank">Understanding Jane Street ↗</a>
+          <div class="ref-meta">thediff.co</div>
+          <span class="ref-badge badge-read">✓ Read</span>
+        </div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-num">04</div>
+        <div class="ref-body">
+          <a class="ref-title" href="https://blog.rossry.net/figgie/" target="_blank">Poker is a bad game for teaching epistemics. Figgie is a better one. ↗</a>
+          <div class="ref-meta">blog.rossry.net · Jane Street Figgie Champion</div>
+          <span class="ref-badge badge-read">✓ Read</span>
+        </div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-num">05</div>
+        <div class="ref-body">
+          <a class="ref-title" href="https://www.youtube.com/watch?v=2GiLRKDe_w4" target="_blank">Figgie Day 2 — Strategic Formalization (YouTube) ↗</a>
+          <div class="ref-meta">youtube.com</div>
+          <span class="ref-badge badge-read">✓ Read</span>
+        </div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-num">06</div>
+        <div class="ref-body">
+          <a class="ref-title" href="https://arxiv.org/pdf/2110.00879" target="_blank">Traders in a Strange Land ↗</a>
+          <div class="ref-meta">arxiv.org · Agent strategies for baseline performance</div>
+          <span class="ref-badge badge-unread">Unread</span>
+        </div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-num">07</div>
+        <div class="ref-body">
+          <a class="ref-title" href="https://github.com/CornellDataScience/FiggieBot" target="_blank">FiggieBot — Cornell Data Science ↗</a>
+          <div class="ref-meta">github.com/CornellDataScience</div>
+          <span class="ref-badge badge-unread">Unread</span>
+        </div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-num">08</div>
+        <div class="ref-body">
+          <a class="ref-title" href="https://github.com/0xDub/figgie-auto" target="_blank">figgie-auto — Trading Strategies ↗</a>
+          <div class="ref-meta">github.com/0xDub</div>
+          <span class="ref-badge badge-unread">Unread</span>
+        </div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-num">09</div>
+        <div class="ref-body">
+          <a class="ref-title" href="https://github.com/LSeaburg/FiggieServer" target="_blank">FiggieServer — Game Backend ↗</a>
+          <div class="ref-meta">github.com/LSeaburg</div>
+          <span class="ref-badge badge-unread">Unread</span>
+        </div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-num">10</div>
+        <div class="ref-body">
+          <a class="ref-title" href="https://signalsandthreads.com/" target="_blank">Signals &amp; Threads — Jane Street Podcast ↗</a>
+          <div class="ref-meta">signalsandthreads.com · Jane Street</div>
+          <span class="ref-badge badge-read">✓ Read</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer style="padding:2rem 5rem; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:0.65rem; color:var(--text-dim);">
+      ♠ ♥ ♦ ♣ &nbsp;·&nbsp; Quant Training &nbsp;·&nbsp; Understanding Figgie
+    </div>
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:0.65rem; color:var(--text-dim);">
+      Work in progress — more sections coming soon
+    </div>
+  </footer>
+
+</main>
+
+<!-- Active nav link highlighting -->
+<script>
+  const sections = document.querySelectorAll('[id]');
+  const navLinks = document.querySelectorAll('nav a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(link => {
+          link.classList.toggle('active', link.getAttribute('href') === '#' + entry.target.id);
+        });
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

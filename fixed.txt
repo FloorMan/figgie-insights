@@ -1,0 +1,95 @@
+🔹 Big Picture Summary
+Capital budgeting is the process firms use to evaluate long-term investment projects (like buying equipment, opening a location, etc.). These decisions are critical because they involve large amounts of money and impact the firm’s future value.
+The core idea:
+
+
+
+
+
+
+
+1️⃣ Types of Projects
+
+
+
+
+
+
+Normal Cash Flow
+One sign change
+Initial outflow → positive inflows
+Nonnormal Cash Flow
+Multiple sign changes
+Can create multiple IRRs
+3️⃣ Net Present Value (NPV)
+NPV=∑CFt(1+r)t
+(1+r)
+CF
+	​
+	​
+Decision Rule:
+If NPV > 0 → Accept
+If NPV < 0 → Reject
+Why NPV is Best:
+Directly measures value added
+Assumes reinvestment at WACC (realistic)
+Works correctly for mutually exclusive projects
+4️⃣ Internal Rate of Return (IRR)
+
+
+NPV=0
+
+
+
+
+
+
+
+Why It Exists:
+Fixes IRR reinvestment assumption
+Avoids multiple IRR problem
+Assumption:
+Cash inflows reinvested at WACC
+Decision Rule:
+If MIRR > WACC → Accept
+MIRR is better than IRR but still secondary to NPV.
+6️⃣ NPV vs IRR Conflicts
+
+
+
+
+
+
+
+Definition:
+Time required to recover initial investment.
+Strengths:
+Easy
+Measures liquidity & risk
+Weaknesses:
+Ignores time value of money
+Ignores cash flows after payback
+No value maximization logic
+8️⃣ Discounted Payback
+Same idea as payback, but uses discounted cash flows.
+Still inferior to NPV.
+9️⃣ Unequal Life Projects
+When projects have different lifespans:
+Two Methods:
+Replacement Chain
+Equivalent Annual Annuity (EAA)
+EAA converts NPV into annual payment equivalent.
+🔟 Key Concepts to Remember for Exams
+Goal: Maximize shareholder wealth
+Primary method: NPV
+IRR is intuitive but flawed
+MIRR fixes IRR issues
+Payback = risk measure, not value measure
+NPV > 0 = value creation
+🧠 How This All Connects
+Capital budgeting answers:
+“Will this project increase firm value?”
+NPV measures value directly.
+Payback measures liquidity.
+
+
