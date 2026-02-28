@@ -22,6 +22,7 @@
 
 /* ---- RESET ---- */
 * { margin: 0; padding: 0; box-sizing: border-box; }
+img { max-width: 100%; height: auto; display: block; }
 
 html { scroll-behavior: smooth; }
 
@@ -32,6 +33,7 @@ body {
   font-weight: 300;
   line-height: 1.7;
   font-size: 17px;
+  overflow-x: hidden;
 }
 
 /* ---- SIDEBAR NAV ---- */
