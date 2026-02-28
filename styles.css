@@ -464,6 +464,13 @@ main {
   border-radius: 3px;
 }
 
+.image img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
 .image-label {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 0.7rem;
